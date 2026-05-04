@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 
 // ─── Shopee fee tables (CPF seller) ───────────────────────────────────────────
 function getShopeeFees(price) {
@@ -33,17 +33,8 @@ function suggestPrice(cost) {
 const fmt = (v) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 const fmtPct = (v) => `${v.toFixed(1).replace(".", ",")}%`;
 
-const BAND_LABELS = {
-  "0.20": "Até R$ 79,99 — 20% + R$ 4",
-  "0.14_16": "R$ 80–99,99 — 14% + R$ 16",
-  "0.14_20": "R$ 100–199,99 — 14% + R$ 20",
-  "0.14_26": "R$ 200–499,99 — 14% + R$ 26",
-};
 
-function bandKey(pct, fixed) {
-  if (pct === 0.20) return "0.20";
-  return `${pct}_${fixed}`;
-}
+
 
 // ─── Empty product template ────────────────────────────────────────────────────
 const emptyProduct = () => ({
