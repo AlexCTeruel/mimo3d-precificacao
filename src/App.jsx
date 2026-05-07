@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ─── Shopee fee tables (CPF seller) ───────────────────────────────────────────
 function getShopeeFees(price) {
@@ -11,7 +11,7 @@ function getShopeeFees(price) {
 
 function calcMetrics(cost, price, usePix) {
   const pixDiscount = usePix ? price * 0.05 : 0;
-  const netPrice = price - pixDiscount;
+  const netPrice = price; // PIX subsidiado pela Shopee, não desconta do vendedor
   const { pct, fixed } = getShopeeFees(price);
   const commission = netPrice * pct;
   const shopeeTotal = commission + fixed;
@@ -262,15 +262,9 @@ function ProductCard({ product, onChange, onRemove }) {
                   }}
                 />
               </div>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#6b6560", cursor: "pointer", whiteSpace: "nowrap" }}>
-                <input
-                  type="checkbox"
-                  checked={product.usePix}
-                  onChange={e => onChange("usePix", e.target.checked)}
-                  style={{ width: 14, height: 14 }}
-                />
-                Desconto PIX (5%)
-              </label>
+              <span style={{ fontSize: 11, color: "#1d9e75", fontStyle: "italic", whiteSpace: "nowrap" }}>
+                ✓ PIX subsidiado pela Shopee
+              </span>
             </div>
           </div>
 
@@ -283,11 +277,11 @@ function ProductCard({ product, onChange, onRemove }) {
             }}>
               {[
                 ["Faixa de comissão", `${fmtPct(metrics.pct * 100)} + ${fmt(metrics.fixed)}`],
-                ["Desconto PIX", fmt(metrics.pixDiscount)],
+
                 ["Comissão Shopee", fmt(metrics.commission)],
                 ["Total taxas Shopee", fmt(metrics.shopeeTotal)],
                 ["Custo de produção", fmt(cost)],
-                ["Recebe líquido", fmt(metrics.netPrice)],
+                ["Recebe líquido", fmt(metrics.netPrice - metrics.shopeeTotal)],
               ].map(([label, value], i) => (
                 <div key={i} style={{
                   padding: "10px 14px",
@@ -354,10 +348,22 @@ function ProductCard({ product, onChange, onRemove }) {
 
 // ─── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
-  const [products, setProducts] = useState([
-    { ...emptyProduct(), name: "Foguete Artemis COM base", filamentCost: "41", price: "119.99", usePix: true },
-    { ...emptyProduct(), id: Date.now() + 1, name: "Foguete Artemis SEM base", filamentCost: "13", price: "69.99", usePix: true },
-  ]);
+  const [products, setProducts] = useState(() => {
+    try {
+      const saved = localStorage.getItem("mimo3d_products");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      { ...emptyProduct(), name: "Foguete Artemis COM base", filamentCost: "41", price: "119.99", usePix: true },
+      { ...emptyProduct(), id: Date.now() + 1, name: "Foguete Artemis SEM base", filamentCost: "13", price: "69.99", usePix: true },
+    ];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("mimo3d_products", JSON.stringify(products));
+    } catch {}
+  }, [products]);
 
   const addProduct = () => setProducts(p => [...p, emptyProduct()]);
 
