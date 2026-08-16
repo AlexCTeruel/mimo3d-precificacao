@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import Icone from "./Icone";
 import { CampoDinheiro, CampoNumero, CampoSelecao, CampoTexto, Aviso } from "./ui";
 import { OPCOES_ARREDONDAMENTO, CANAIS_PADRAO, dadosIniciais } from "../lib/defaults";
 import { exportarJson, importarJson } from "../lib/storage";
@@ -9,7 +10,7 @@ function EditorCanal({ canal, aoMudar, aoRemover, emUso }) {
     aoMudar("faixas", canal.faixas.map((f, j) => (j === i ? { ...f, [campo]: valor } : f)));
 
   return (
-    <div className="cartao" style={{ boxShadow: "none", background: "var(--creme-2)" }}>
+    <div className="cartao" style={{ boxShadow: "none", background: "var(--fundo-2)", marginBottom: 0 }}>
       <div className="cartao-corpo">
         <div style={{ display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
@@ -140,7 +141,7 @@ export default function Ajustes({ base, atualizar, setDados }) {
 
       {mensagem && (
         <div style={{ marginBottom: 16 }}>
-          <Aviso tom={mensagem.tom} icone={mensagem.tom === "risco" ? "⚠️" : "✅"}>
+          <Aviso tom={mensagem.tom} icone={mensagem.tom === "risco" ? "alerta" : "check"}>
             {mensagem.texto}
           </Aviso>
         </div>
@@ -206,7 +207,7 @@ export default function Ajustes({ base, atualizar, setDados }) {
 
           {num(base.settings.margemAlvo) >= 70 && (
             <div style={{ marginTop: 12 }}>
-              <Aviso tom="atencao" icone="🎯">
+              <Aviso tom="atencao">
                 Margem alvo bem alta. Com as taxas do marketplace, o preço sugerido pode sair fora
                 da realidade do mercado.
               </Aviso>
@@ -220,7 +221,7 @@ export default function Ajustes({ base, atualizar, setDados }) {
         <div className="cartao-corpo">
           <p className="rotulo-bloco">Canais de venda e taxas</p>
           <div style={{ marginBottom: 14 }}>
-            <Aviso icone="📌">
+            <Aviso>
               Marketplaces mudam comissão sem avisar. Confira na sua conta de vendedor e ajuste
               aqui — todo o catálogo recalcula na hora.
             </Aviso>
@@ -248,7 +249,7 @@ export default function Ajustes({ base, atualizar, setDados }) {
                 ])
               }
             >
-              + Adicionar canal
+              <Icone nome="mais" tamanho={14} /> Adicionar canal
             </button>
             <button
               className="botao botao-claro botao-pequeno"
@@ -274,10 +275,10 @@ export default function Ajustes({ base, atualizar, setDados }) {
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button className="botao botao-escuro botao-pequeno" onClick={() => exportarJson(base)}>
-              ⬇ Exportar backup
+              <Icone nome="baixar" tamanho={14} /> Exportar backup
             </button>
             <button className="botao botao-claro botao-pequeno" onClick={() => arquivoRef.current?.click()}>
-              ⬆ Importar backup
+              <Icone nome="enviar" tamanho={14} /> Importar backup
             </button>
             <input
               ref={arquivoRef}

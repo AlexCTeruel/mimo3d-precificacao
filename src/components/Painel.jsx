@@ -1,9 +1,11 @@
 import { useMemo } from "react";
+import Icone from "./Icone";
 import { Aviso, ChipLink, Vazio } from "./ui";
 import { analisarProduto, lerMargem, FAIXAS_MARGEM } from "../lib/pricing";
 import { brl, pct, horas, num } from "../lib/format";
 import { exportarCsv } from "../lib/storage";
 import { LICENCAS } from "../lib/defaults";
+import { MARCA } from "../lib/marca";
 
 export default function Painel({ base, irPara }) {
   const linhas = useMemo(
@@ -54,7 +56,7 @@ export default function Painel({ base, irPara }) {
   if (!base.produtos.length) {
     return (
       <div className="cartao">
-        <Vazio emoji="🩷" titulo="Bem-vinda à nova Mimo3D">
+        <Vazio icone="cubo" titulo={`Bem-vindo ao ${MARCA.nome}`}>
           Cadastre sua impressora e seu filamento, depois crie o primeiro produto.
           <div style={{ marginTop: 14 }}>
             <button className="botao botao-primario" onClick={() => irPara("produtos")}>
@@ -104,31 +106,31 @@ export default function Painel({ base, irPara }) {
         licencaPendente.length > 0 || semPreco.length > 0) && (
         <div style={{ display: "grid", gap: 8, marginBottom: 18 }}>
           {noPrejuizo.length > 0 && (
-            <Aviso tom="risco" icone="🚨">
+            <Aviso tom="risco">
               <b>{noPrejuizo.length}</b> produto(s) vendendo no prejuízo:{" "}
               {noPrejuizo.map((l) => l.produto.nome || "sem nome").join(", ")}.
             </Aviso>
           )}
           {abaixoDoAlvo.length > 0 && (
-            <Aviso tom="atencao" icone="📉">
+            <Aviso tom="atencao">
               <b>{abaixoDoAlvo.length}</b> produto(s) abaixo da margem alvo de{" "}
               {pct(base.settings.margemAlvo, 0)}. Abra e clique no preço sugerido pra corrigir.
             </Aviso>
           )}
           {licencaPendente.length > 0 && (
-            <Aviso tom="atencao" icone="📋">
+            <Aviso tom="atencao">
               <b>{licencaPendente.length}</b> produto(s) publicados com licença de modelo pendente
               de verificação ou marcada como uso pessoal.
             </Aviso>
           )}
           {semAnuncio.length > 0 && (
-            <Aviso tom="info" icone="🔗">
+            <Aviso tom="info" icone="link">
               <b>{semAnuncio.length}</b> produto(s) marcados como publicados ainda sem o link do
               anúncio salvo.
             </Aviso>
           )}
           {semPreco.length > 0 && (
-            <Aviso tom="info" icone="🏷️">
+            <Aviso tom="info" icone="moeda">
               <b>{semPreco.length}</b> produto(s) com produção calculada mas sem preço definido.
             </Aviso>
           )}
@@ -141,7 +143,7 @@ export default function Painel({ base, irPara }) {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
             <p className="rotulo-bloco" style={{ margin: 0, flex: 1 }}>Margem por produto</p>
             <button className="botao botao-claro botao-pequeno" onClick={baixarCsv}>
-              ⬇ Baixar planilha
+              <Icone nome="baixar" tamanho={14} /> Baixar planilha
             </button>
           </div>
 

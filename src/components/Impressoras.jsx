@@ -1,3 +1,4 @@
+import Icone from "./Icone";
 import { CampoDinheiro, CampoNumero, CampoTexto, Vazio, Aviso } from "./ui";
 import { novaImpressora } from "../lib/defaults";
 import { custoHoraImpressora } from "../lib/pricing";
@@ -28,7 +29,7 @@ export default function Impressoras({ base, atualizar }) {
       </p>
 
       <div style={{ marginBottom: 16 }}>
-        <Aviso icone="⚡">
+        <Aviso>
           A energia usa o preço do kWh que está em <b>Ajustes</b> ({brl(base.settings.energiaKwh)}/kWh).
           Olhe na sua conta de luz o valor com impostos.
         </Aviso>
@@ -105,9 +106,9 @@ export default function Impressoras({ base, atualizar }) {
                 <div className="resultado-linha">
                   <span>Energia</span><b>{brl(custo.energia)}/h</b>
                 </div>
-                <div className="resultado-destaque" style={{ background: "var(--navy-3)" }}>
-                  <div className="rotulo">CUSTO DE CADA HORA LIGADA</div>
-                  <div className="valor" style={{ fontSize: 20 }}>{brl(custo.total)}</div>
+                <div className="resultado-destaque" style={{ background: "var(--acento-fraco)", borderTop: "1px solid var(--acento-borda)" }}>
+                  <div className="rotulo" style={{ color: "var(--acento-claro)" }}>Custo de cada hora ligada</div>
+                  <div className="valor" style={{ fontSize: 22 }}>{brl(custo.total)}</div>
                 </div>
               </div>
             </div>
@@ -117,7 +118,7 @@ export default function Impressoras({ base, atualizar }) {
 
       {!base.impressoras.length && (
         <div className="cartao">
-          <Vazio emoji="🖨️" titulo="Nenhuma impressora cadastrada">
+          <Vazio icone="impressora" titulo="Nenhuma impressora cadastrada">
             Sem ela, energia e depreciação ficam de fora e o custo sai menor do que é de verdade.
           </Vazio>
         </div>
@@ -127,7 +128,7 @@ export default function Impressoras({ base, atualizar }) {
         className="botao-adicionar"
         onClick={() => atualizar("impressoras", (l) => [...l, novaImpressora()])}
       >
-        + Adicionar impressora
+        <Icone nome="mais" tamanho={17} /> Adicionar impressora
       </button>
     </>
   );

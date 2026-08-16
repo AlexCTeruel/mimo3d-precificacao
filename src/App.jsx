@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { useBanco } from "./lib/storage";
+import { MARCA, APOIO } from "./lib/marca";
+import Icone from "./components/Icone";
+import Apoiar from "./components/Apoiar";
 import Painel from "./components/Painel";
 import Produtos from "./components/Produtos";
 import Impressoras from "./components/Impressoras";
@@ -7,77 +10,93 @@ import Filamentos from "./components/Filamentos";
 import Ajustes from "./components/Ajustes";
 import Guia from "./components/Guia";
 
-const ABAS = [
-  { id: "painel", icone: "📊", label: "Painel" },
-  { id: "produtos", icone: "🎁", label: "Produtos", contar: (d) => d.produtos.length },
-  { id: "impressoras", icone: "🖨️", label: "Impressoras", contar: (d) => d.impressoras.length },
-  { id: "filamentos", icone: "🧵", label: "Filamentos", contar: (d) => d.filamentos.length },
-  { id: "ajustes", icone: "⚙️", label: "Ajustes" },
-  { id: "guia", icone: "💡", label: "Dicas" },
+const SECOES = [
+  { id: "painel", icone: "painel", label: "Painel" },
+  { id: "produtos", icone: "produtos", label: "Produtos" },
+  { id: "impressoras", icone: "impressora", label: "Impressoras" },
+  { id: "filamentos", icone: "filamento", label: "Filamentos" },
+  { id: "ajustes", icone: "ajustes", label: "Ajustes" },
+  { id: "guia", icone: "guia", label: "Dicas" },
 ];
 
 export default function App() {
   const { dados, setDados, atualizar } = useBanco();
-  const [aba, setAba] = useState("produtos");
+  const [secao, setSecao] = useState("produtos");
+  const [apoioAberto, setApoioAberto] = useState(false);
 
   return (
-    <>
-      <header className="topo">
-        <div className="topo-interno">
-          <div className="marca">
-            <span className="marca-laco" aria-hidden="true">🎀</span>
+    <div className="app">
+      <aside className="trilho">
+        <div className="trilho-marca" aria-hidden="true">
+          <Icone nome="cubo" tamanho={22} />
+        </div>
+
+        <nav aria-label="Seções">
+          {SECOES.map((s) => (
+            <button
+              key={s.id}
+              className="trilho-botao"
+              aria-current={secao === s.id ? "page" : undefined}
+              aria-label={s.label}
+              onClick={() => setSecao(s.id)}
+            >
+              <Icone nome={s.icone} tamanho={20} />
+              <span>{s.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {APOIO.ativo && (
+          <button
+            className="trilho-botao trilho-apoiar"
+            aria-label="Apoiar o projeto"
+            onClick={() => setApoioAberto(true)}
+          >
+            <Icone nome="coracao" tamanho={20} />
+            <span>Apoiar</span>
+          </button>
+        )}
+      </aside>
+
+      <div className="conteudo">
+        <header className="cabecalho">
+          <div className="cabecalho-interno">
             <div>
-              <div className="marca-nome">
-                mimo<em>3D</em>
-              </div>
-              <div className="marca-sub">Precificação</div>
+              <h1 className="marca-nome">{MARCA.nome}</h1>
+              <p className="marca-tagline">
+                <i aria-hidden="true" /> {MARCA.tagline}
+              </p>
             </div>
-            <div className="topo-acoes">
-              <button className="botao botao-fantasma botao-pequeno" onClick={() => setAba("guia")}>
-                Como funciona
+            <div className="cabecalho-acoes">
+              {APOIO.ativo && (
+                <button className="botao botao-claro botao-pequeno" onClick={() => setApoioAberto(true)}>
+                  <Icone nome="coracao" tamanho={15} /> Apoiar
+                </button>
+              )}
+              <button className="botao botao-claro botao-pequeno" onClick={() => setSecao("guia")}>
+                <Icone nome="guia" tamanho={15} /> Como funciona
               </button>
             </div>
           </div>
-          <p className="marca-slogan">
-            Do arquivo ao anúncio publicado: guarde de onde veio o modelo, onde ele está à venda e
-            descubra o preço que realmente deixa lucro depois das taxas.
+        </header>
+
+        <main className="pagina">
+          {secao === "painel" && <Painel base={dados} irPara={setSecao} />}
+          {secao === "produtos" && <Produtos base={dados} atualizar={atualizar} />}
+          {secao === "impressoras" && <Impressoras base={dados} atualizar={atualizar} />}
+          {secao === "filamentos" && <Filamentos base={dados} atualizar={atualizar} />}
+          {secao === "ajustes" && <Ajustes base={dados} atualizar={atualizar} setDados={setDados} />}
+          {secao === "guia" && <Guia base={dados} />}
+
+          <p className="rodape">
+            <b>{MARCA.nome}</b> · {MARCA.tagline.toLowerCase()}
+            <br />
+            Seus dados ficam salvos só neste navegador — exporte o backup em Ajustes.
           </p>
+        </main>
+      </div>
 
-          <nav className="abas" role="tablist" aria-label="Seções">
-            {ABAS.map((a) => {
-              const contagem = a.contar?.(dados);
-              return (
-                <button
-                  key={a.id}
-                  className="aba"
-                  role="tab"
-                  aria-selected={aba === a.id}
-                  onClick={() => setAba(a.id)}
-                >
-                  <span aria-hidden="true">{a.icone}</span>
-                  {a.label}
-                  {contagem > 0 && <span className="aba-contador">{contagem}</span>}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </header>
-
-      <main className="pagina">
-        {aba === "painel" && <Painel base={dados} irPara={setAba} />}
-        {aba === "produtos" && <Produtos base={dados} atualizar={atualizar} />}
-        {aba === "impressoras" && <Impressoras base={dados} atualizar={atualizar} />}
-        {aba === "filamentos" && <Filamentos base={dados} atualizar={atualizar} />}
-        {aba === "ajustes" && <Ajustes base={dados} atualizar={atualizar} setDados={setDados} />}
-        {aba === "guia" && <Guia base={dados} />}
-
-        <p className="rodape">
-          mimo<b style={{ color: "var(--rosa)" }}>3D</b> · cada peça, um mimo 🩷
-          <br />
-          Seus dados ficam salvos só neste navegador — exporte o backup em Ajustes.
-        </p>
-      </main>
-    </>
+      {apoioAberto && <Apoiar aoFechar={() => setApoioAberto(false)} />}
+    </div>
   );
 }

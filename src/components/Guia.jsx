@@ -1,5 +1,6 @@
 import { Aviso } from "./ui";
 import { brl } from "../lib/format";
+import { MARCA } from "../lib/marca";
 
 const PERGUNTAS = [
   {
@@ -45,7 +46,8 @@ export default function Guia({ base }) {
     <>
       <h2 className="secao-titulo">Dicas e dúvidas</h2>
       <p className="secao-desc">
-        O básico pra sua precificação parar de ser chute e virar conta.
+        Como o {MARCA.nome} chega no preço, e o básico pra sua precificação parar de ser chute e
+        virar conta.
       </p>
 
       <div className="cartao">
@@ -53,7 +55,7 @@ export default function Guia({ base }) {
           <p className="rotulo-bloco">A conta, em uma linha</p>
           <div
             style={{
-              background: "var(--navy)", color: "#dbe6f7", borderRadius: "var(--raio-p)",
+              background: "var(--fundo-2)", color: "var(--tinta-2)", border: "1px solid var(--linha)", borderRadius: "var(--raio-p)",
               padding: "14px 16px", fontFamily: "var(--mono)", fontSize: 12.5, lineHeight: 1.9,
             }}
           >
@@ -61,7 +63,7 @@ export default function Guia({ base }) {
             <br />
             custo final = custo × (1 + reserva de falha)
             <br />
-            <span style={{ color: "var(--rosa-claro)" }}>
+            <span style={{ color: "var(--acento-claro)" }}>
               lucro = preço − taxa do canal − imposto − frete − custo final
             </span>
           </div>
@@ -93,15 +95,15 @@ export default function Guia({ base }) {
         <div className="cartao-corpo">
           <p className="rotulo-bloco">Três hábitos que salvam a margem</p>
           <div style={{ display: "grid", gap: 10 }}>
-            <Aviso tom="marca" icone="🩷">
+            <Aviso tom="marca" icone="check">
               <b>Preço não é custo × 3 no chute.</b> Marketplace cobra percentual <i>e</i> taxa fixa —
               em produto barato a taxa fixa come tudo. Use o preço sugerido como piso de conversa.
             </Aviso>
-            <Aviso tom="marca" icone="🩷">
+            <Aviso tom="marca" icone="check">
               <b>Sua hora entra na conta.</b> Lixar, pintar, montar e embalar é trabalho. Se você
               não cobrar por isso, está pagando pra vender.
             </Aviso>
-            <Aviso tom="marca" icone="🩷">
+            <Aviso tom="marca" icone="check">
               <b>Revise quando o filamento subir.</b> Mudou o preço do rolo em Filamentos, todos os
               produtos daquele material recalculam — dá pra ver na hora quem ficou abaixo do alvo.
             </Aviso>

@@ -3,11 +3,13 @@ import {
   Bloco, Campo, CampoDinheiro, CampoLink, CampoNumero, CampoSelecao, CampoTexto,
   Aviso, ChipLink, Selo,
 } from "./ui";
+import Icone from "./Icone";
 import { ORIGENS_MODELO, LICENCAS, STATUS_PRODUTO } from "../lib/defaults";
+import { MARCA } from "../lib/marca";
 import { analisarProduto } from "../lib/pricing";
 import { brl, pct, horas, gramas, num } from "../lib/format";
 
-const EMOJIS = ["🎁", "🚀", "🌸", "🧸", "🐱", "🦖", "💐", "🕯️", "🪴", "🔑", "🧩", "☕", "🎀", "⭐", "🐝", "🏠"];
+const EMOJIS = ["📦", "🚀", "🌸", "🧸", "🐱", "🦖", "💐", "🕯️", "🪴", "🔑", "🧩", "☕", "🎁", "⭐", "🐝", "🏠"];
 
 function proximoEmoji(atual) {
   const i = EMOJIS.indexOf(atual);
@@ -29,7 +31,7 @@ function textoResumo(produto, analise) {
   }
   if (produto.anuncioUrl) linhas.push(`Anúncio: ${produto.anuncioUrl}`);
   if (produto.modeloUrl) linhas.push(`Modelo: ${produto.modeloUrl}`);
-  linhas.push("— mimo3D · cada peça, um mimo 🩷");
+  linhas.push(`— calculado no ${MARCA.nome}`);
   return linhas.join("\n");
 }
 
@@ -77,7 +79,11 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
         {venda && (
           <span
             className="selo"
-            style={{ background: leitura.cor, color: "#fff" }}
+            style={{
+              color: leitura.cor,
+              background: `color-mix(in srgb, ${leitura.cor} 14%, transparent)`,
+              borderColor: `color-mix(in srgb, ${leitura.cor} 34%, transparent)`,
+            }}
             title="Margem sobre o preço de venda"
           >
             {pct(venda.margem)} · {leitura.label}
@@ -91,9 +97,11 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
             if (window.confirm(`Remover "${produto.nome || "esse produto"}"?`)) aoRemover();
           }}
         >
-          ×
+          <Icone nome="lixeira" tamanho={15} />
         </button>
-        <span className="produto-seta">{aberto ? "▲" : "▼"}</span>
+        <span className={`produto-seta${aberto ? " aberta" : ""}`}>
+          <Icone nome="seta" tamanho={15} />
+        </span>
       </div>
 
       {/* ── Faixa de resumo ───────────────────────────────────────── */}
@@ -104,16 +112,16 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
         {custo.horas > 0 && <span><b>{horas(custo.horas)}</b></span>}
         {analise.preco > 0 && <span>preço <b>{brl(analise.preco)}</b></span>}
         <span style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-          <ChipLink url={produto.modeloUrl} icone="📐" rotuloVazio="sem link do modelo" />
-          <ChipLink url={produto.anuncioUrl} icone="🛒" rotuloVazio="sem link do anúncio" />
+          <ChipLink url={produto.modeloUrl} icone="cubo" rotuloVazio="sem link do modelo" />
+          <ChipLink url={produto.anuncioUrl} icone="loja" rotuloVazio="sem link do anúncio" />
         </span>
       </div>
 
       {aberto && (
         <div className="cartao-corpo">
           {/* ── Origem do modelo ────────────────────────────────── */}
-          <Bloco titulo="📐 De onde veio o modelo">
-            <div className="grade grade-2" style={{ marginBottom: 12 }}>
+          <Bloco titulo="De onde veio o modelo" icone="cubo">
+            <div className="grade grade-2" style={{ marginBottom: 13 }}>
               <CampoLink
                 label="Link do modelo / STL"
                 placeholder="https://cults3d.com/..."
@@ -128,7 +136,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                 opcoes={ORIGENS_MODELO}
               />
             </div>
-            <div className="grade grade-4" style={{ marginBottom: 12 }}>
+            <div className="grade grade-4" style={{ marginBottom: 13 }}>
               <CampoTexto
                 label="Autor / designer"
                 placeholder="Nome do criador"
@@ -155,16 +163,16 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
               />
             </div>
             {licenca?.tom === "risco" && (
-              <div style={{ marginBottom: 12 }}>
-                <Aviso tom="risco" icone="⚠️">
+              <div style={{ marginBottom: 13 }}>
+                <Aviso tom="risco">
                   Esse modelo está marcado como <b>uso pessoal</b>. Vender pode violar a licença do autor —
                   confira antes de publicar ou troque por um modelo autoral.
                 </Aviso>
               </div>
             )}
             {licenca?.tom === "atencao" && (
-              <div style={{ marginBottom: 12 }}>
-                <Aviso tom="atencao" icone="📋">
+              <div style={{ marginBottom: 13 }}>
+                <Aviso tom="atencao">
                   Lembre de {produto.modeloLicenca === "creditar"
                     ? "creditar o autor no anúncio."
                     : "verificar a licença antes de colocar à venda."}
@@ -174,8 +182,8 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
           </Bloco>
 
           {/* ── Publicação ──────────────────────────────────────── */}
-          <Bloco titulo="🛒 Onde ele está publicado">
-            <div className="grade grade-2" style={{ marginBottom: 12 }}>
+          <Bloco titulo="Onde ele está publicado" icone="loja">
+            <div className="grade grade-2" style={{ marginBottom: 13 }}>
               <CampoLink
                 label="Link do meu anúncio"
                 placeholder="https://shopee.com.br/..."
@@ -191,10 +199,10 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                 dica="Onde ficam as fotos e artes desse produto."
               />
             </div>
-            <div className="grade grade-3" style={{ marginBottom: 16 }}>
+            <div className="grade grade-3" style={{ marginBottom: 18 }}>
               <CampoTexto
                 label="SKU / código interno"
-                placeholder="MIMO-001"
+                placeholder="SKU-001"
                 valor={produto.anuncioSku}
                 aoMudar={(v) => aoMudar("anuncioSku", v)}
               />
@@ -215,8 +223,8 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
           </Bloco>
 
           {/* ── Produção ────────────────────────────────────────── */}
-          <Bloco titulo="🖨️ Produção">
-            <div className="grade grade-2" style={{ marginBottom: 12 }}>
+          <Bloco titulo="Produção" icone="impressora">
+            <div className="grade grade-2" style={{ marginBottom: 13 }}>
               <CampoSelecao
                 label="Impressora"
                 valor={produto.impressoraId}
@@ -238,7 +246,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
               />
             </div>
 
-            <div className="grade grade-4" style={{ marginBottom: 12 }}>
+            <div className="grade grade-4" style={{ marginBottom: 13 }}>
               <CampoNumero
                 label="Peso da impressão"
                 sufixo="g"
@@ -268,7 +276,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
               />
             </div>
 
-            <div className="grade grade-4" style={{ marginBottom: 12 }}>
+            <div className="grade grade-4" style={{ marginBottom: 13 }}>
               <CampoNumero
                 label="Pós-processo"
                 sufixo="min"
@@ -296,34 +304,19 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
             </div>
 
             {custo.total > 0 && (
-              <details className="cartao" style={{ boxShadow: "none", marginBottom: 16 }}>
-                <summary
-                  style={{
-                    cursor: "pointer", listStyle: "none", padding: "11px 15px",
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    background: "var(--creme-2)", fontSize: 13, color: "var(--tinta-2)",
-                  }}
-                >
+              <details className="cartao custo-dobra" style={{ boxShadow: "none", marginBottom: 18 }}>
+                <summary>
                   <span>Custo de produção por peça</span>
-                  <b style={{ fontFamily: "var(--mono)", fontSize: 15, color: "var(--navy)" }}>
-                    {brl(custo.total)}
-                  </b>
+                  <b>{brl(custo.total)}</b>
                 </summary>
-                <div style={{ padding: "10px 15px 14px" }}>
+                <div style={{ padding: "10px 16px 15px" }}>
                   {custo.linhas.map((l) => (
-                    <div
-                      key={l.chave}
-                      style={{
-                        display: "flex", justifyContent: "space-between",
-                        fontSize: 12.5, padding: "5px 0", color: "var(--apagado)",
-                        borderBottom: "1px dashed var(--linha)",
-                      }}
-                    >
+                    <div key={l.chave} className="custo-linha">
                       <span>{l.label}</span>
-                      <span style={{ fontFamily: "var(--mono)", color: "var(--tinta-2)" }}>{brl(l.valor)}</span>
+                      <span>{brl(l.valor)}</span>
                     </div>
                   ))}
-                  <p className="campo-dica" style={{ marginTop: 10 }}>
+                  <p className="campo-dica" style={{ marginTop: 11 }}>
                     {custo.pecas > 1 && `Lote de ${custo.pecas} peças · `}
                     {custo.horas > 0 && `${horas(custo.horas)} de máquina por peça · `}
                     energia e depreciação vêm da impressora cadastrada.
@@ -334,8 +327,8 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
           </Bloco>
 
           {/* ── Venda ───────────────────────────────────────────── */}
-          <Bloco titulo="💰 Venda">
-            <div className="grade grade-3" style={{ marginBottom: 12 }}>
+          <Bloco titulo="Venda" icone="moeda">
+            <div className="grade grade-3" style={{ marginBottom: 13 }}>
               <CampoSelecao
                 label="Canal de venda"
                 valor={produto.canalId}
@@ -359,20 +352,18 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
             {sugerido > 0 && (
               <button
                 className="sugestao"
-                style={{ marginBottom: 12 }}
+                style={{ marginBottom: 13 }}
                 onClick={() => aoMudar("preco", sugerido.toFixed(2))}
               >
                 <div>
                   <div className="rotulo">PREÇO SUGERIDO · MARGEM DE {pct(base.settings.margemAlvo, 0)}</div>
-                  <div className="dica">
-                    Clique pra aplicar · mínimo sem prejuízo {brl(minimo)}
-                  </div>
+                  <div className="dica">Clique pra aplicar · mínimo sem prejuízo {brl(minimo)}</div>
                 </div>
                 <span className="valor">{brl(sugerido)}</span>
               </button>
             )}
 
-            <div className="grade grade-2" style={{ marginBottom: 14 }}>
+            <div className="grade grade-2" style={{ marginBottom: 15 }}>
               <div className="campo preco-principal">
                 <label>Preço de venda</label>
                 <div className="entrada-prefixo">
@@ -422,29 +413,34 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                   <b>− {brl(custo.total)}</b>
                 </div>
 
-                <div className="resultado-destaque" style={{ background: leitura.cor }}>
+                <div
+                  className="resultado-destaque"
+                  style={{ background: `color-mix(in srgb, ${leitura.cor} 13%, transparent)` }}
+                >
                   <div>
-                    <div className="rotulo">LUCRO POR PEÇA · MARGEM {leitura.label.toUpperCase()}</div>
-                    <div style={{ fontSize: 11, opacity: 0.8, marginTop: 2 }}>
+                    <div className="rotulo" style={{ color: leitura.cor }}>
+                      Lucro por peça · margem {leitura.label}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--apagado)", marginTop: 3 }}>
                       Markup {venda.markup.toFixed(2).replace(".", ",")}× sobre o custo
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    <div className="valor">{brl(venda.lucro)}</div>
-                    <div className="sub">{pct(venda.margem)}</div>
+                    <div className="valor" style={{ color: leitura.cor }}>{brl(venda.lucro)}</div>
+                    <div className="sub" style={{ color: leitura.cor }}>{pct(venda.margem)}</div>
                   </div>
                 </div>
 
                 <div className="resultado-linha" style={{ borderBottom: "none" }}>
                   <span>Preço mínimo pra não ter prejuízo</span>
-                  <b style={{ color: "var(--rosa-claro)" }}>{brl(minimo)}</b>
+                  <b style={{ color: "var(--risco)" }}>{brl(minimo)}</b>
                 </div>
               </div>
             )}
 
             {num(produto.precoConcorrencia) > 0 && analise.preco > 0 && (
-              <div style={{ marginTop: 12 }}>
-                <Aviso tom={analise.preco <= num(produto.precoConcorrencia) ? "info" : "atencao"} icone="🔍">
+              <div style={{ marginTop: 13 }}>
+                <Aviso tom={analise.preco <= num(produto.precoConcorrencia) ? "info" : "atencao"} icone="busca">
                   {analise.preco <= num(produto.precoConcorrencia)
                     ? `Você está ${brl(num(produto.precoConcorrencia) - analise.preco)} abaixo da concorrência.`
                     : `Você está ${brl(analise.preco - num(produto.precoConcorrencia))} acima da concorrência — vale reforçar acabamento e fotos no anúncio.`}
@@ -454,7 +450,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
           </Bloco>
 
           {/* ── Observações e ações ─────────────────────────────── */}
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 18 }}>
             <Campo label="Observações">
               <textarea
                 value={produto.observacoes}
@@ -464,12 +460,13 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
             </Campo>
           </div>
 
-          <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 8, marginTop: 15, flexWrap: "wrap" }}>
             <button className="botao botao-claro botao-pequeno" onClick={aoDuplicar}>
-              ⧉ Duplicar
+              <Icone nome="duplicar" tamanho={14} /> Duplicar
             </button>
             <button className="botao botao-claro botao-pequeno" onClick={copiarResumo}>
-              {copiado ? "✓ Copiado" : "📋 Copiar resumo"}
+              <Icone nome={copiado ? "check" : "copiar"} tamanho={14} />
+              {copiado ? "Copiado" : "Copiar resumo"}
             </button>
             <button
               className="botao botao-perigo botao-pequeno"
@@ -478,7 +475,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                 if (window.confirm(`Remover "${produto.nome || "esse produto"}"?`)) aoRemover();
               }}
             >
-              Remover
+              <Icone nome="lixeira" tamanho={14} /> Remover
             </button>
           </div>
         </div>

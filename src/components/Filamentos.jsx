@@ -1,3 +1,4 @@
+import Icone from "./Icone";
 import { CampoDinheiro, CampoNumero, CampoSelecao, CampoTexto, Vazio } from "./ui";
 import { novoFilamento } from "../lib/defaults";
 import { precoPorGrama } from "../lib/pricing";
@@ -85,19 +86,19 @@ export default function Filamentos({ base, atualizar }) {
                 />
                 <div
                   style={{
-                    background: "var(--creme-2)", border: "1px solid var(--linha)",
+                    background: "var(--fundo-2)", border: "1px solid var(--linha)",
                     borderRadius: "var(--raio-p)", padding: "10px 14px",
                   }}
                 >
                   <div
                     style={{
-                      fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.07em",
+                      fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em",
                       color: "var(--apagado-2)", fontWeight: 700,
                     }}
                   >
                     Custo por grama
                   </div>
-                  <div style={{ fontFamily: "var(--mono)", fontSize: 17, fontWeight: 700, color: "var(--navy)" }}>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: 18, fontWeight: 700, color: "var(--acento-claro)" }}>
                     R$ {porGrama.toFixed(3).replace(".", ",")}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--apagado)" }}>
@@ -112,7 +113,7 @@ export default function Filamentos({ base, atualizar }) {
 
       {!base.filamentos.length && (
         <div className="cartao">
-          <Vazio emoji="🧵" titulo="Nenhum filamento cadastrado">
+          <Vazio icone="filamento" titulo="Nenhum filamento cadastrado">
             Cadastre pelo menos um pra calcular o custo de material das peças.
           </Vazio>
         </div>
@@ -122,7 +123,7 @@ export default function Filamentos({ base, atualizar }) {
         className="botao-adicionar"
         onClick={() => atualizar("filamentos", (l) => [...l, novoFilamento()])}
       >
-        + Adicionar filamento
+        <Icone nome="mais" tamanho={17} /> Adicionar filamento
       </button>
     </>
   );

@@ -71,7 +71,7 @@ export const CANAIS_PADRAO = [
 
 // ─── Onde o modelo veio ────────────────────────────────────────────────────────
 export const ORIGENS_MODELO = [
-  "Autoral (Mimo3D)",
+  "Autoral (meu)",
   "Cults3D",
   "Printables",
   "MakerWorld",
@@ -122,13 +122,13 @@ export const novoProduto = () => ({
   id: uid(),
   criadoEm: hoje(),
   nome: "",
-  emoji: "🎁",
+  emoji: "📦",
   status: "ideia",
   tags: "",
 
   // ── de onde veio o modelo
   modeloUrl: "",
-  modeloOrigem: "Autoral (Mimo3D)",
+  modeloOrigem: "Autoral (meu)",
   modeloLicenca: "autoral",
   modeloCusto: "",        // R$ pago pelo STL
   modeloRateio: 10,       // dividido em quantas peças
@@ -188,10 +188,10 @@ export function dadosIniciais() {
     produtos: [
       {
         ...novoProduto(),
-        nome: "Foguete Artemis com base",
-        emoji: "🚀",
+        nome: "Vaso geométrico médio",
+        emoji: "🪴",
         status: "publicado",
-        modeloOrigem: "Autoral (Mimo3D)",
+        modeloOrigem: "Autoral (meu)",
         modeloLicenca: "autoral",
         impressoraId: impressora.id,
         filamentoId: filamento.id,

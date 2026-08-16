@@ -3,15 +3,29 @@ import {
   SETTINGS_PADRAO, CANAIS_PADRAO, dadosIniciais, novoProduto,
 } from "./defaults";
 
-const CHAVE = "mimo3d.v2";
-const CHAVE_ANTIGA = "mimo3d_products";
+const CHAVE = "calibra.v1";
+const CHAVES_ANTIGAS = ["mimo3d.v2", "mimo3d_products"];
 
-// ─── Migração da versão antiga ─────────────────────────────────────────────────
+// ─── Migração de versões anteriores ────────────────────────────────────────────
 function migrarAntigo() {
   try {
-    const bruto = localStorage.getItem(CHAVE_ANTIGA);
+    const bruto = CHAVES_ANTIGAS.map((c) => localStorage.getItem(c)).find(Boolean);
     if (!bruto) return null;
-    const antigos = JSON.parse(bruto);
+    const salvo = JSON.parse(bruto);
+
+    // formato v2: o objeto inteiro, só muda a chave onde ele mora
+    if (salvo && !Array.isArray(salvo) && salvo.produtos) {
+      return {
+        settings: { ...SETTINGS_PADRAO, ...(salvo.settings || {}) },
+        canais: salvo.canais?.length ? salvo.canais : CANAIS_PADRAO,
+        impressoras: salvo.impressoras || [],
+        filamentos: salvo.filamentos || [],
+        produtos: salvo.produtos || [],
+      };
+    }
+
+    // formato v1: só uma lista de produtos com campos de custo soltos
+    const antigos = salvo;
     if (!Array.isArray(antigos) || !antigos.length) return null;
 
     const base = dadosIniciais();
@@ -83,7 +97,7 @@ export function exportarJson(dados) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `mimo3d-precificacao-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `calibra-backup-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -126,7 +140,7 @@ export function exportarCsv(linhas) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `mimo3d-produtos-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `calibra-produtos-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }

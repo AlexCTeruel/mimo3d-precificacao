@@ -1,8 +1,10 @@
-# 🎀 Mimo3D — Precificação
+# Calibra
 
-Calculadora de precificação para impressão 3D. Do arquivo ao anúncio publicado: guarda de onde
-veio o modelo, onde ele está à venda e mostra o preço que realmente deixa lucro depois das taxas
-do marketplace.
+**O preço certo da sua peça.** Calculadora de precificação para impressão 3D: descobre o custo
+real de cada peça, aplica as taxas do marketplace e mostra quanto sobra de verdade — além de
+guardar de onde veio o modelo e onde ele está publicado.
+
+Roda inteiro no navegador. Sem cadastro, sem servidor, sem enviar dado nenhum pra lugar nenhum.
 
 ## O que ela faz
 
@@ -27,9 +29,9 @@ do marketplace.
 **O que ela devolve**
 
 - Custo de produção por peça, item por item.
-- Preço sugerido pra bater sua margem alvo, já considerando a faixa de comissão do canal.
+- Preço sugerido pra bater sua margem alvo, respeitando a faixa de comissão em que o preço cai.
 - Preço mínimo pra não ter prejuízo.
-- Lucro, margem e markup reais do preço que você praticou.
+- Lucro, margem e markup reais do preço praticado.
 - Painel com margem por produto, alertas (prejuízo, abaixo do alvo, licença pendente, anúncio sem
   link) e exportação em planilha.
 
@@ -39,10 +41,35 @@ Vêm configurados Shopee (CPF, por faixa de preço), Mercado Livre, Elo7, site p
 venda direta no PIX. Todas as taxas são editáveis em **Ajustes** — marketplace muda comissão sem
 avisar, então confira na sua conta de vendedor e ajuste ali que o catálogo inteiro recalcula.
 
+## Personalizar
+
+Tudo que é marca e dinheiro mora em **`src/lib/marca.js`**:
+
+```js
+export const MARCA = {
+  nome: "Calibra",
+  tagline: "O preço certo da sua peça",
+  // ...
+};
+```
+
+### Botão de apoio
+
+O botão do coração (no trilho lateral e no cabeçalho) abre um painel com valores de apoio via
+Mercado Pago. Pra ativar:
+
+1. No Mercado Pago, vá em **Seu negócio → Link de pagamento** e crie um link para cada valor.
+2. Cole cada URL curta (`mpago.la/...`) no campo `url` correspondente em `APOIO.valores`.
+3. Opcionalmente preencha `urlValorLivre` (o apoiador escolhe quanto) e `contato`.
+
+Enquanto nenhum link estiver preenchido, os valores aparecem apagados e o painel avisa que falta
+configurar. Pra remover o botão do site inteiro, é só deixar `APOIO.ativo: false`.
+
 ## Seus dados
 
-Ficam salvos apenas no `localStorage` do navegador. Nada é enviado pra servidor nenhum. Use
-**Exportar backup** em Ajustes pra levar o catálogo pra outro aparelho.
+Ficam salvos apenas no `localStorage` do navegador. Use **Exportar backup** em Ajustes pra levar o
+catálogo pra outro aparelho. A calculadora importa automaticamente dados de versões anteriores na
+primeira abertura.
 
 ## Rodar localmente
 
@@ -53,8 +80,5 @@ npm run build # build de produção
 ```
 
 O deploy pro GitHub Pages roda sozinho pelo workflow em `.github/workflows/main.yml` a cada push
-na `main`.
-
----
-
-mimo**3D** · cada peça, um mimo 🩷
+na `main`. Se você mudar o repositório de lugar, ajuste o campo `homepage` do `package.json` —
+é ele que define o caminho dos arquivos no build.

@@ -1,3 +1,4 @@
+import Icone from "./Icone";
 import { dominio, href } from "../lib/format";
 
 // ─── Campos ────────────────────────────────────────────────────────────────────
@@ -115,10 +116,13 @@ export function CampoLink({ label, dica, valor, aoMudar, placeholder }) {
 }
 
 // ─── Blocos ────────────────────────────────────────────────────────────────────
-export function Bloco({ titulo, children }) {
+export function Bloco({ titulo, icone, children }) {
   return (
     <>
-      <p className="rotulo-bloco">{titulo}</p>
+      <p className="rotulo-bloco">
+        {icone && <Icone nome={icone} tamanho={14} />}
+        {titulo}
+      </p>
       {children}
     </>
   );
@@ -128,10 +132,12 @@ export function Selo({ tom = "neutro", children }) {
   return <span className={`selo selo-${tom}`}>{children}</span>;
 }
 
-export function Aviso({ tom = "info", icone = "💡", children }) {
+const ICONE_POR_TOM = { info: "info", atencao: "alerta", risco: "alerta", marca: "info" };
+
+export function Aviso({ tom = "info", icone, children }) {
   return (
     <div className={`aviso aviso-${tom}`}>
-      <span aria-hidden="true">{icone}</span>
+      <Icone nome={icone || ICONE_POR_TOM[tom] || "info"} tamanho={16} />
       <div>{children}</div>
     </div>
   );
@@ -142,23 +148,26 @@ export function ChipLink({ url, icone, rotuloVazio }) {
   if (!destino) {
     return (
       <span className="chip-link chip-vazio">
-        {icone} <span>{rotuloVazio}</span>
+        <Icone nome={icone} tamanho={13} />
+        <span>{rotuloVazio}</span>
       </span>
     );
   }
   return (
     <a className="chip-link" href={destino} target="_blank" rel="noopener noreferrer nofollow" title={destino}>
-      {icone} <span>{dominio(destino)}</span> ↗
+      <Icone nome={icone} tamanho={13} />
+      <span>{dominio(destino)}</span>
+      <Icone nome="externo" tamanho={12} />
     </a>
   );
 }
 
-export function Vazio({ emoji, titulo, children }) {
+export function Vazio({ icone = "info", titulo, children }) {
   return (
     <div className="vazio">
-      <span className="emoji" aria-hidden="true">{emoji}</span>
-      <strong style={{ color: "var(--tinta-2)" }}>{titulo}</strong>
-      <div style={{ marginTop: 6 }}>{children}</div>
+      <div className="selo-icone"><Icone nome={icone} tamanho={24} /></div>
+      <strong>{titulo}</strong>
+      <div>{children}</div>
     </div>
   );
 }

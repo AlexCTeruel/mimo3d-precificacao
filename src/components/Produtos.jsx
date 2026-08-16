@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import CartaoProduto from "./CartaoProduto";
+import Icone from "./Icone";
 import { Vazio, Aviso } from "./ui";
 import { novoProduto, STATUS_PRODUTO } from "../lib/defaults";
 import { analisarProduto } from "../lib/pricing";
@@ -93,7 +94,7 @@ export default function Produtos({ base, atualizar }) {
 
       {semCadastro && (
         <div style={{ marginBottom: 16 }}>
-          <Aviso tom="atencao" icone="🖨️">
+          <Aviso tom="atencao" icone="impressora">
             Cadastre sua {!base.impressoras.length && "impressora"}
             {!base.impressoras.length && !base.filamentos.length && " e seu "}
             {!base.filamentos.length && "filamento"} nas abas acima — é o que faz a calculadora
@@ -107,13 +108,17 @@ export default function Produtos({ base, atualizar }) {
         className="cartao"
         style={{ padding: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}
       >
-        <input
-          className="entrada"
-          style={{ flex: "2 1 200px", width: "auto" }}
-          placeholder="🔎 Buscar por nome, tag, SKU, autor..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-        />
+        <div className="entrada-prefixo" style={{ flex: "2 1 220px" }}>
+          <span style={{ display: "grid", placeItems: "center" }}>
+            <Icone nome="busca" tamanho={15} />
+          </span>
+          <input
+            className="entrada"
+            placeholder="Buscar por nome, tag, SKU, autor..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+          />
+        </div>
         <select
           className="entrada"
           style={{ flex: "1 1 130px", width: "auto" }}
@@ -138,7 +143,7 @@ export default function Produtos({ base, atualizar }) {
       </div>
 
       <button className="botao-adicionar" style={{ marginBottom: 16 }} onClick={adicionar}>
-        + Novo produto
+        <Icone nome="mais" tamanho={17} /> Novo produto
       </button>
 
       {visiveis.map((produto) => (
@@ -155,7 +160,7 @@ export default function Produtos({ base, atualizar }) {
 
       {!visiveis.length && (
         <div className="cartao">
-          <Vazio emoji="🎁" titulo={produtos.length ? "Nada com esse filtro" : "Nenhum produto ainda"}>
+          <Vazio icone="produtos" titulo={produtos.length ? "Nada com esse filtro" : "Nenhum produto ainda"}>
             {produtos.length
               ? "Tente outro termo ou volte o filtro pra “todos os status”."
               : "Clique em “Novo produto” e comece pelo peso e tempo que o fatiador mostrou."}
