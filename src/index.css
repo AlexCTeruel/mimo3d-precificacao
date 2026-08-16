@@ -551,6 +551,7 @@ a { color: var(--acento-claro); }
 
 /* ─── Painel ──────────────────────────────────────────────────────────────── */
 .barra-trilho {
+  display: block;   /* também é usada como <span> na visão em lista */
   height: 7px;
   background: rgba(255, 255, 255, 0.07);
   border-radius: 99px;
@@ -558,7 +559,7 @@ a { color: var(--acento-claro); }
   flex: 1;
   min-width: 60px;
 }
-.barra-preenchida { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+.barra-preenchida { display: block; height: 100%; border-radius: 99px; transition: width 0.4s ease; }
 
 .painel-numeros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
 .numero-caixa {
@@ -726,6 +727,354 @@ a { color: var(--acento-claro); }
   font-variant-numeric: tabular-nums;
 }
 
+/* ─── Controles da lista de produtos ──────────────────────────────────────── */
+.barra-controles {
+  padding: 13px;
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.seletor-visao {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--raio-p);
+  border: 1px solid var(--linha);
+  background: var(--fundo-2);
+  margin-left: auto;
+}
+.seletor-visao button {
+  width: 34px; height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--apagado);
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.seletor-visao button:hover { color: var(--tinta); background: rgba(255, 255, 255, 0.05); }
+.seletor-visao button.ativo { background: var(--acento-fraco); color: var(--acento-claro); }
+
+/* ─── Visão em lista ──────────────────────────────────────────────────────── */
+.lista-produtos { padding: 4px; }
+
+.linha-produto {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 13px;
+  border: none;
+  border-radius: var(--raio-p);
+  background: transparent;
+  color: var(--tinta);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.linha-produto:hover { background: rgba(255, 255, 255, 0.04); }
+.linha-produto + .linha-produto { border-top: 1px solid var(--linha); border-radius: 0; }
+.linha-produto > svg { color: var(--apagado-2); flex: none; }
+
+.linha-produto .emoji { font-size: 20px; flex: none; width: 26px; text-align: center; }
+
+.linha-produto .identidade {
+  flex: 2 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.linha-produto .identidade b {
+  font-size: 13.5px;
+  font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.linha-produto .identidade small {
+  font-size: 11px;
+  color: var(--apagado-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.linha-produto .numero {
+  flex: none;
+  width: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.linha-produto .numero small {
+  font-family: var(--texto);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--apagado-2);
+  font-weight: 700;
+}
+
+.linha-produto .margem {
+  flex: 1 1 110px;
+  min-width: 90px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.linha-produto .margem b {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  min-width: 52px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Visão em ícones ─────────────────────────────────────────────────────── */
+.grade-produtos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(184px, 1fr));
+  gap: 13px;
+  margin-bottom: 16px;
+}
+
+.bloco-produto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 15px 15px;
+  background: var(--painel);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  color: var(--tinta);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, transform 0.15s, background 0.15s;
+}
+.bloco-produto:hover {
+  border-color: var(--acento-borda);
+  background: var(--painel-2);
+  transform: translateY(-2px);
+}
+
+.bloco-produto .capa {
+  position: relative;
+  width: 62px; height: 62px;
+  border-radius: 18px;
+  display: grid; place-items: center;
+  font-size: 30px;
+  background: var(--fundo-2);
+  border: 1px solid var(--linha);
+  margin-bottom: 3px;
+}
+/* fiozinho de margem no pé do ícone: dá pra ler a saúde do produto de longe */
+.bloco-produto .capa .anel {
+  position: absolute;
+  left: 12px; right: 12px; bottom: -1px;
+  height: 3px;
+  border-radius: 3px;
+}
+
+.bloco-produto .nome {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bloco-produto .preco {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+.bloco-produto .faixa { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.bloco-produto .faixa .selo { background: transparent; }
+.bloco-produto .rodape-bloco {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+  max-width: 100%;
+}
+.bloco-produto .chip-link { font-size: 10.5px; padding: 4px 9px; }
+
+/* ─── Multifilamento ──────────────────────────────────────────────────────── */
+.alternar-modo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border: 1px dashed var(--linha-forte);
+  border-radius: var(--raio-p);
+  background: transparent;
+  color: var(--apagado);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.alternar-modo:hover {
+  color: var(--acento-claro);
+  border-color: var(--acento-borda);
+  background: var(--acento-fraco);
+}
+
+.multifilamento {
+  border: 1px solid var(--acento-borda);
+  background: var(--acento-fraco);
+  border-radius: var(--raio-p);
+  padding: 14px;
+  margin-bottom: 13px;
+  display: grid;
+  gap: 9px;
+}
+.multifilamento-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.multifilamento-topo .rotulo {
+  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--acento-claro);
+}
+.multifilamento-linha {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.multifilamento-linha .ordem {
+  width: 22px; height: 22px;
+  flex: none;
+  border-radius: 7px;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--apagado);
+}
+.multifilamento-linha select { flex: 1; min-width: 0; }
+.multifilamento-rodape {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--apagado);
+}
+.multifilamento-rodape span { margin-left: auto; }
+.multifilamento-rodape b {
+  font-family: var(--mono);
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Canais múltiplos ────────────────────────────────────────────────────── */
+.canais-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.canal-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 99px;
+  border: 1px solid var(--linha);
+  background: var(--fundo-2);
+  color: var(--apagado);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.canal-chip:hover { color: var(--tinta); border-color: var(--linha-forte); }
+.canal-chip svg { opacity: 0.6; }
+.canal-chip.ativo {
+  color: var(--tinta);
+  background: var(--acento-fraco);
+  border-color: var(--acento-borda);
+}
+.canal-chip.ativo svg { opacity: 1; color: var(--acento-claro); }
+.canal-chip.principal { border-color: var(--acento-claro); }
+.canal-chip em {
+  font-style: normal;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--acento-claro);
+  padding-left: 7px;
+  border-left: 1px solid var(--acento-borda);
+}
+
+.comparativo {
+  margin-top: 12px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-p);
+  overflow: hidden;
+  background: var(--fundo-2);
+}
+
+.comparativo-cabecalho,
+.comparativo-linha {
+  display: grid;
+  grid-template-columns: minmax(96px, 1.6fr) repeat(4, minmax(58px, 1fr));
+  gap: 10px;
+  align-items: center;
+  padding: 9px 14px;
+  text-align: right;
+}
+.comparativo-cabecalho {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+  color: var(--apagado-2);
+  border-bottom: 1px solid var(--linha);
+}
+.comparativo-cabecalho span:first-child,
+.comparativo-linha .nome { text-align: left; }
+
+.comparativo-linha {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--linha);
+  background: transparent;
+  color: var(--tinta);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.comparativo-linha:first-of-type { border-top: none; }
+.comparativo-linha:hover { background: rgba(255, 255, 255, 0.045); }
+.comparativo-linha.principal { background: var(--acento-fraco); }
+.comparativo-linha .nome {
+  font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.comparativo-linha.principal .nome { color: var(--acento-claro); }
+.comparativo-linha .mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.comparativo-linha .apagado { color: var(--apagado); }
+
 /* ─── Apoio ───────────────────────────────────────────────────────────────── */
 .cortina {
   position: fixed;
@@ -846,6 +1195,29 @@ a { color: var(--acento-claro); }
 
   .pagina { padding: 20px 14px 40px; }
   .cabecalho-interno { padding: 18px 14px; }
+
+  /* na lista, a linha vira duas: identidade em cima, status e margem embaixo */
+  .linha-produto {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "emoji identidade seta"
+      ".     status     status"
+      ".     margem     margem";
+    column-gap: 12px;
+    row-gap: 9px;
+  }
+  .linha-produto .emoji { grid-area: emoji; }
+  .linha-produto .identidade { grid-area: identidade; }
+  .linha-produto > svg { grid-area: seta; align-self: center; }
+  .linha-produto > .selo { grid-area: status; justify-self: start; }
+  .linha-produto .margem { grid-area: margem; }
+  .linha-produto .numero { display: none; }
+
+  .seletor-visao { margin-left: 0; }
+
+  .comparativo-cabecalho,
+  .comparativo-linha { grid-template-columns: minmax(80px, 1.4fr) repeat(4, minmax(46px, 1fr)); font-size: 11.5px; padding: 9px 11px; }
 }
 
 @media (max-width: 460px) {

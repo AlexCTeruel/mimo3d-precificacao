@@ -232,7 +232,9 @@ export default function Ajustes({ base, atualizar, setDados }) {
               <EditorCanal
                 key={canal.id}
                 canal={canal}
-                emUso={base.produtos.some((p) => p.canalId === canal.id)}
+                emUso={base.produtos.some(
+                  (p) => p.canaisIds?.includes(canal.id) || p.canalId === canal.id
+                )}
                 aoMudar={(campo, valor) => mudarCanal(canal.id, campo, valor)}
                 aoRemover={() => atualizar("canais", (l) => l.filter((c) => c.id !== canal.id))}
               />

@@ -22,9 +22,11 @@ Roda inteiro no navegador. Sem cadastro, sem servidor, sem enviar dado nenhum pr
   e quanto custou o arquivo, rateado pelo número de peças que você pretende vender.
 - **Onde ele está publicado** — link do seu anúncio, link das fotos/artes, SKU, status e tags.
 - **Produção** — impressora, filamento, peso e tempo do fatiador, peças por placa, pós-processo,
-  embalagem e extras.
-- **Venda** — canal com a tabela de taxas, frete por sua conta, preço da concorrência e o preço
-  final.
+  embalagem e extras. Peça de várias cores entra no **modo multifilamento**: uma linha de peso por
+  cor, cada uma com o próprio preço por quilo.
+- **Venda** — **um ou vários canais ao mesmo tempo**, frete por sua conta, preço da concorrência e
+  o preço final. Com mais de um canal marcado, sai um comparativo com preço sugerido, taxa, lucro
+  e margem em cada marketplace.
 
 **O que ela devolve**
 
@@ -34,6 +36,9 @@ Roda inteiro no navegador. Sem cadastro, sem servidor, sem enviar dado nenhum pr
 - Lucro, margem e markup reais do preço praticado.
 - Painel com margem por produto, alertas (prejuízo, abaixo do alvo, licença pendente, anúncio sem
   link) e exportação em planilha.
+
+O catálogo tem três visualizações — **cartões** (editar), **lista** (comparar margem de tudo de uma
+vez) e **ícones** (a vitrine visual). Clicar num item da lista ou da grade abre o cartão dele.
 
 ## Canais de venda
 

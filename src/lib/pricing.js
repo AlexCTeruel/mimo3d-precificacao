@@ -26,19 +26,48 @@ export function precoPorGrama(filamento) {
   return num(filamento.precoKg) / peso;
 }
 
+// ─── Quais filamentos e canais esse produto usa ────────────────────────────────
+/** No modo simples é um filamento só; no multifilamento, um por cor. */
+export function filamentosDoProduto(produto) {
+  if (produto.multiFilamento) {
+    return (produto.filamentosUsados || []).filter((u) => u.filamentoId);
+  }
+  return produto.filamentoId ? [{ filamentoId: produto.filamentoId, pesoG: produto.pesoG }] : [];
+}
+
+/** O primeiro da lista é o principal: é dele que sai o resultado em destaque. */
+export function canaisDoProduto(produto, canais) {
+  const ids = produto.canaisIds?.length
+    ? produto.canaisIds
+    : [produto.canalId].filter(Boolean);
+  const escolhidos = ids.map((id) => canais.find((c) => c.id === id)).filter(Boolean);
+  return escolhidos.length ? escolhidos : canais.slice(0, 1);
+}
+
 // ─── Custo de produção de UMA peça ─────────────────────────────────────────────
 export function calcularCusto(produto, { impressoras, filamentos, settings }) {
   const impressora = impressoras.find((i) => i.id === produto.impressoraId);
-  const filamento = filamentos.find((f) => f.id === produto.filamentoId);
 
   const pecas = Math.max(1, num(produto.pecasPorLote) || 1);
   const horasLote = num(produto.tempoH) + num(produto.tempoMin) / 60;
   const horas = horasLote / pecas;
-  const gramas = num(produto.pesoG) / pecas;
 
   const hora = custoHoraImpressora(impressora, settings);
 
-  const material = gramas * precoPorGrama(filamento);
+  // Cada cor entra com o próprio peso e o próprio preço por grama.
+  const usos = filamentosDoProduto(produto);
+  const porFilamento = usos.map((uso) => {
+    const fil = filamentos.find((f) => f.id === uso.filamentoId);
+    const gramasLote = num(uso.pesoG);
+    return {
+      filamento: fil,
+      gramas: gramasLote / pecas,
+      custo: (gramasLote / pecas) * precoPorGrama(fil),
+    };
+  });
+
+  const material = porFilamento.reduce((s, f) => s + f.custo, 0);
+  const gramas = porFilamento.reduce((s, f) => s + f.gramas, 0);
   const energia = horas * hora.energia;
   const depreciacao = horas * hora.depreciacao;
   const manutencao = horas * hora.manutencao;
@@ -54,15 +83,25 @@ export function calcularCusto(produto, { impressoras, filamentos, settings }) {
 
   const falha = subtotal * (num(settings.taxaFalha) / 100);
 
+  // No multifilamento vale mais ver uma linha por cor do que um total só.
+  const linhasMaterial = porFilamento.length > 1
+    ? porFilamento.map((f, i) => ({
+        chave: `material-${i}`,
+        label: `${f.filamento?.nome || "Filamento"} · ${f.gramas.toFixed(0)} g`,
+        valor: f.custo,
+      }))
+    : [{ chave: "material", label: "Filamento", valor: material }];
+
   return {
     impressora,
-    filamento,
+    porFilamento,
+    filamento: porFilamento[0]?.filamento,
     horas,
     horasLote,
     gramas,
     pecas,
     linhas: [
-      { chave: "material", label: "Filamento", valor: material },
+      ...linhasMaterial,
       { chave: "energia", label: "Energia", valor: energia },
       { chave: "depreciacao", label: "Depreciação da máquina", valor: depreciacao },
       { chave: "manutencao", label: "Manutenção", valor: manutencao },
@@ -202,25 +241,38 @@ export function lerMargem(m) {
 // ─── Tudo junto, do jeito que a tela precisa ───────────────────────────────────
 export function analisarProduto(produto, base) {
   const custo = calcularCusto(produto, base);
-  const canal = base.canais.find((c) => c.id === produto.canalId) || base.canais[0];
+  const canais = canaisDoProduto(produto, base.canais);
   const preco = num(produto.preco);
   const frete = num(produto.freteProprio);
 
-  const sugerido = custo.total > 0
-    ? arredondar(
-        precoParaMargem(custo.total, base.settings.margemAlvo, canal, base.settings, frete),
-        base.settings.arredondamento
-      )
-    : 0;
+  // O mesmo custo passa por cada canal escolhido — a taxa é que muda tudo.
+  const porCanal = canais.map((canal) => {
+    const sugerido = custo.total > 0
+      ? arredondar(
+          precoParaMargem(custo.total, base.settings.margemAlvo, canal, base.settings, frete),
+          base.settings.arredondamento
+        )
+      : 0;
+    const minimo = custo.total > 0
+      ? arredondar(precoMinimo(custo.total, canal, base.settings, frete), "nenhum")
+      : 0;
+    const venda = preco > 0 ? calcularVenda(custo.total, preco, canal, base.settings, frete) : null;
 
-  const minimo = custo.total > 0
-    ? arredondar(precoMinimo(custo.total, canal, base.settings, frete), "nenhum")
-    : 0;
+    return { canal, sugerido, minimo, venda, leitura: venda ? lerMargem(venda.margem) : null };
+  });
 
-  const venda = preco > 0 ? calcularVenda(custo.total, preco, canal, base.settings, frete) : null;
-  const vendaSugerida = sugerido > 0
-    ? calcularVenda(custo.total, sugerido, canal, base.settings, frete)
-    : null;
+  // O primeiro canal é o principal: é dele que sai o número em destaque.
+  const principal = porCanal[0];
 
-  return { custo, canal, preco, sugerido, minimo, venda, vendaSugerida, leitura: venda ? lerMargem(venda.margem) : null };
+  return {
+    custo,
+    canais,
+    canal: principal.canal,
+    porCanal,
+    preco,
+    sugerido: principal.sugerido,
+    minimo: principal.minimo,
+    venda: principal.venda,
+    leitura: principal.leitura,
+  };
 }

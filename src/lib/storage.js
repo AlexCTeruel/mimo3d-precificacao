@@ -42,7 +42,7 @@ function migrarAntigo() {
         extraDesc: "Custos da versão anterior",
         tempoH: p.printHours || "",
         preco: p.price || "",
-        canalId: "shopee-cpf",
+        canaisIds: ["shopee-cpf"],
         observacoes:
           "Importado da calculadora antiga — vale reconferir peso, tempo e filamento.",
       })),

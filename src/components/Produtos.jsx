@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import CartaoProduto from "./CartaoProduto";
 import Icone from "./Icone";
-import { Vazio, Aviso } from "./ui";
+import { Vazio, Aviso, Selo, ChipLink } from "./ui";
 import { novoProduto, STATUS_PRODUTO } from "../lib/defaults";
 import { analisarProduto } from "../lib/pricing";
-import { uid, hoje } from "../lib/format";
+import { uid, hoje, brl, pct, gramas, horas } from "../lib/format";
 
 const ORDENACOES = [
   { id: "recentes", label: "Mais recentes" },
@@ -13,22 +13,138 @@ const ORDENACOES = [
   { id: "nome", label: "Nome (A–Z)" },
 ];
 
+const VISOES = [
+  { id: "cartoes", icone: "cartoes", label: "Cartões" },
+  { id: "lista", icone: "lista", label: "Lista" },
+  { id: "icones", icone: "grade", label: "Ícones" },
+];
+
+// ─── Linha da visão em lista ──────────────────────────────────────────────────
+function LinhaProduto({ produto, analise, aoAbrir }) {
+  const status = STATUS_PRODUTO.find((s) => s.id === produto.status);
+  const leitura = analise.leitura;
+
+  return (
+    <button className="linha-produto" onClick={aoAbrir}>
+      <span className="emoji" aria-hidden="true">{produto.emoji}</span>
+
+      <span className="identidade">
+        <b>{produto.nome || "Sem nome"}</b>
+        <small>
+          {produto.anuncioSku && <>{produto.anuncioSku} · </>}
+          {analise.custo.gramas > 0 && <>{gramas(analise.custo.gramas)} · </>}
+          {analise.custo.horas > 0 && <>{horas(analise.custo.horas)} · </>}
+          {analise.canal?.nome}
+          {analise.canais.length > 1 && ` +${analise.canais.length - 1}`}
+        </small>
+      </span>
+
+      {status && <Selo tom={status.tom}>{status.label}</Selo>}
+
+      <span className="numero">
+        <small>custo</small>
+        {analise.custo.total > 0 ? brl(analise.custo.total) : "—"}
+      </span>
+      <span className="numero">
+        <small>preço</small>
+        {analise.preco > 0 ? brl(analise.preco) : "—"}
+      </span>
+      <span className="numero" style={{ color: leitura?.cor }}>
+        <small>lucro</small>
+        {analise.venda ? brl(analise.venda.lucro) : "—"}
+      </span>
+
+      <span className="margem">
+        <span className="barra-trilho">
+          <span
+            className="barra-preenchida"
+            style={{
+              width: analise.venda ? `${Math.min(100, Math.max(2, analise.venda.margem))}%` : 0,
+              background: leitura?.cor,
+            }}
+          />
+        </span>
+        <b style={{ color: leitura?.cor }}>{analise.venda ? pct(analise.venda.margem) : "—"}</b>
+      </span>
+
+      <Icone nome="seta" tamanho={15} />
+    </button>
+  );
+}
+
+// ─── Bloco da visão em ícones ─────────────────────────────────────────────────
+function BlocoProduto({ produto, analise, aoAbrir }) {
+  const status = STATUS_PRODUTO.find((s) => s.id === produto.status);
+  const leitura = analise.leitura;
+
+  return (
+    <button className="bloco-produto" onClick={aoAbrir}>
+      <span className="capa" aria-hidden="true">
+        {produto.emoji}
+        {analise.venda && (
+          <i className="anel" style={{ background: leitura.cor }} />
+        )}
+      </span>
+
+      <b className="nome">{produto.nome || "Sem nome"}</b>
+
+      <span className="preco">{analise.preco > 0 ? brl(analise.preco) : "sem preço"}</span>
+
+      <span className="faixa">
+        {status && <Selo tom={status.tom}>{status.label}</Selo>}
+        {analise.venda && (
+          <span className="selo" style={{ color: leitura.cor, borderColor: leitura.cor }}>
+            {pct(analise.venda.margem)}
+          </span>
+        )}
+      </span>
+
+      <span className="rodape-bloco">
+        <ChipLink url={produto.modeloUrl} icone="cubo" rotuloVazio="sem modelo" />
+        <ChipLink url={produto.anuncioUrl} icone="loja" rotuloVazio="sem anúncio" />
+      </span>
+    </button>
+  );
+}
+
+// ─── Página ───────────────────────────────────────────────────────────────────
 export default function Produtos({ base, atualizar }) {
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
   const [ordem, setOrdem] = useState("recentes");
-  const [recemCriado, setRecemCriado] = useState(null);
+  const [visao, setVisao] = useState("cartoes");
+  const [abertos, setAbertos] = useState(
+    () => new Set(base.produtos.length === 1 ? [base.produtos[0].id] : [])
+  );
 
   const { produtos } = base;
+
+  const alternarAberto = (id) =>
+    setAbertos((atuais) => {
+      const proximo = new Set(atuais);
+      if (proximo.has(id)) proximo.delete(id);
+      else proximo.add(id);
+      return proximo;
+    });
+
+  /** Lista e ícones são pra navegar: clicou, abre o cartão completo do produto. */
+  const abrirNoCartao = (id) => {
+    setAbertos((atuais) => new Set(atuais).add(id));
+    setVisao("cartoes");
+    requestAnimationFrame(() =>
+      document.getElementById(`produto-${id}`)?.scrollIntoView({ block: "start" })
+    );
+  };
 
   const adicionar = () => {
     const p = {
       ...novoProduto(),
       impressoraId: base.impressoras[0]?.id || "",
       filamentoId: base.filamentos[0]?.id || "",
-      canalId: base.canais[0]?.id || "",
+      canaisIds: [base.canais[0]?.id].filter(Boolean),
     };
-    setRecemCriado(p.id);
+    setAbertos((atuais) => new Set(atuais).add(p.id));
+    setVisao("cartoes");
     atualizar("produtos", (lista) => [p, ...lista]);
   };
 
@@ -41,8 +157,9 @@ export default function Produtos({ base, atualizar }) {
       anuncioUrl: "",
       anuncioSku: "",
       status: "ideia",
+      filamentosUsados: (produto.filamentosUsados || []).map((u) => ({ ...u, id: uid() })),
     };
-    setRecemCriado(copia.id);
+    setAbertos((atuais) => new Set(atuais).add(copia.id));
     atualizar("produtos", (lista) => {
       const i = lista.findIndex((p) => p.id === produto.id);
       const nova = [...lista];
@@ -69,8 +186,9 @@ export default function Produtos({ base, atualizar }) {
         .some((c) => String(c).toLowerCase().includes(termo));
     });
 
+    const analises = new Map(produtos.map((p) => [p.id, analisarProduto(p, base)]));
+
     if (ordem !== "recentes") {
-      const analises = new Map(produtos.map((p) => [p.id, analisarProduto(p, base)]));
       lista = [...lista].sort((a, b) => {
         const A = analises.get(a.id);
         const B = analises.get(b.id);
@@ -79,7 +197,7 @@ export default function Produtos({ base, atualizar }) {
         return (B.venda?.lucro ?? -999) - (A.venda?.lucro ?? -999);
       });
     }
-    return lista;
+    return lista.map((produto) => ({ produto, analise: analises.get(produto.id) }));
   }, [produtos, busca, filtroStatus, ordem, base]);
 
   const semCadastro = !base.impressoras.length || !base.filamentos.length;
@@ -104,10 +222,7 @@ export default function Produtos({ base, atualizar }) {
       )}
 
       {/* ── Barra de controles ────────────────────────────────────── */}
-      <div
-        className="cartao"
-        style={{ padding: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}
-      >
+      <div className="cartao barra-controles">
         <div className="entrada-prefixo" style={{ flex: "2 1 220px" }}>
           <span style={{ display: "grid", placeItems: "center" }}>
             <Icone nome="busca" tamanho={15} />
@@ -124,6 +239,7 @@ export default function Produtos({ base, atualizar }) {
           style={{ flex: "1 1 130px", width: "auto" }}
           value={filtroStatus}
           onChange={(e) => setFiltroStatus(e.target.value)}
+          aria-label="Filtrar por status"
         >
           <option value="todos">Todos os status</option>
           {STATUS_PRODUTO.map((s) => (
@@ -135,28 +251,74 @@ export default function Produtos({ base, atualizar }) {
           style={{ flex: "1 1 150px", width: "auto" }}
           value={ordem}
           onChange={(e) => setOrdem(e.target.value)}
+          aria-label="Ordenar"
         >
           {ORDENACOES.map((o) => (
             <option key={o.id} value={o.id}>{o.label}</option>
           ))}
         </select>
+
+        <div className="seletor-visao" role="group" aria-label="Modo de visualização">
+          {VISOES.map((v) => (
+            <button
+              key={v.id}
+              className={visao === v.id ? "ativo" : undefined}
+              aria-pressed={visao === v.id}
+              title={v.label}
+              onClick={() => setVisao(v.id)}
+            >
+              <Icone nome={v.icone} tamanho={16} />
+            </button>
+          ))}
+        </div>
       </div>
 
       <button className="botao-adicionar" style={{ marginBottom: 16 }} onClick={adicionar}>
         <Icone nome="mais" tamanho={17} /> Novo produto
       </button>
 
-      {visiveis.map((produto) => (
-        <CartaoProduto
-          key={produto.id}
-          produto={produto}
-          base={base}
-          abertoInicial={produto.id === recemCriado || produtos.length === 1}
-          aoMudar={(campo, valor) => mudarCampo(produto.id, campo, valor)}
-          aoRemover={() => remover(produto.id)}
-          aoDuplicar={() => duplicar(produto)}
-        />
-      ))}
+      {/* ── Cartões ───────────────────────────────────────────────── */}
+      {visao === "cartoes" &&
+        visiveis.map(({ produto }) => (
+          <CartaoProduto
+            key={produto.id}
+            produto={produto}
+            base={base}
+            aberto={abertos.has(produto.id)}
+            aoAlternar={() => alternarAberto(produto.id)}
+            aoMudar={(campo, valor) => mudarCampo(produto.id, campo, valor)}
+            aoRemover={() => remover(produto.id)}
+            aoDuplicar={() => duplicar(produto)}
+          />
+        ))}
+
+      {/* ── Lista ─────────────────────────────────────────────────── */}
+      {visao === "lista" && visiveis.length > 0 && (
+        <div className="cartao lista-produtos">
+          {visiveis.map(({ produto, analise }) => (
+            <LinhaProduto
+              key={produto.id}
+              produto={produto}
+              analise={analise}
+              aoAbrir={() => abrirNoCartao(produto.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Ícones ────────────────────────────────────────────────── */}
+      {visao === "icones" && visiveis.length > 0 && (
+        <div className="grade-produtos">
+          {visiveis.map(({ produto, analise }) => (
+            <BlocoProduto
+              key={produto.id}
+              produto={produto}
+              analise={analise}
+              aoAbrir={() => abrirNoCartao(produto.id)}
+            />
+          ))}
+        </div>
+      )}
 
       {!visiveis.length && (
         <div className="cartao">

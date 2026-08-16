@@ -118,6 +118,13 @@ export const novoFilamento = () => ({
   fornecedor: "",
 });
 
+/** Uma cor dentro de uma peça multifilamento. */
+export const novoUsoFilamento = (filamentoId = "") => ({
+  id: uid(),
+  filamentoId,
+  pesoG: "",
+});
+
 export const novoProduto = () => ({
   id: uid(),
   criadoEm: hoje(),
@@ -143,6 +150,8 @@ export const novoProduto = () => ({
   impressoraId: "",
   filamentoId: "",
   pesoG: "",
+  multiFilamento: false,   // true = uma linha de peso por cor
+  filamentosUsados: [],    // [{ id, filamentoId, pesoG }]
   tempoH: "",
   tempoMin: "",
   pecasPorLote: 1,
@@ -152,7 +161,7 @@ export const novoProduto = () => ({
   extraDesc: "",
 
   // ── venda
-  canalId: "shopee-cpf",
+  canaisIds: ["shopee-cpf"], // o primeiro é o principal
   freteProprio: "",       // frete que sai do seu bolso
   preco: "",
   precoConcorrencia: "",
@@ -200,7 +209,7 @@ export function dadosIniciais() {
         tempoMin: 30,
         posProcessoMin: 25,
         embalagem: 3.5,
-        canalId: "shopee-cpf",
+        canaisIds: ["shopee-cpf", "mercado-livre", "direto-pix"],
         preco: 119.9,
       },
     ],

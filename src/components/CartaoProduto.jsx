@@ -4,7 +4,7 @@ import {
   Aviso, ChipLink, Selo,
 } from "./ui";
 import Icone from "./Icone";
-import { ORIGENS_MODELO, LICENCAS, STATUS_PRODUTO } from "../lib/defaults";
+import { ORIGENS_MODELO, LICENCAS, STATUS_PRODUTO, novoUsoFilamento } from "../lib/defaults";
 import { MARCA } from "../lib/marca";
 import { analisarProduto } from "../lib/pricing";
 import { brl, pct, horas, gramas, num } from "../lib/format";
@@ -14,6 +14,197 @@ const EMOJIS = ["📦", "🚀", "🌸", "🧸", "🐱", "🦖", "💐", "🕯️
 function proximoEmoji(atual) {
   const i = EMOJIS.indexOf(atual);
   return EMOJIS[(i + 1) % EMOJIS.length];
+}
+
+// ─── Bloco de filamentos: um só ou uma linha de peso por cor ──────────────────
+function FilamentosDoProduto({ produto, base, aoMudar }) {
+  const usos = produto.filamentosUsados || [];
+
+  const ligarMulti = () => {
+    // leva o que já estava preenchido no modo simples pra primeira cor
+    const inicial = [
+      { ...novoUsoFilamento(produto.filamentoId), pesoG: produto.pesoG },
+      novoUsoFilamento(),
+    ];
+    aoMudar("filamentosUsados", usos.length ? usos : inicial);
+    aoMudar("multiFilamento", true);
+  };
+
+  const desligarMulti = () => {
+    const primeiro = usos.find((u) => u.filamentoId);
+    if (primeiro) {
+      aoMudar("filamentoId", primeiro.filamentoId);
+      aoMudar("pesoG", primeiro.pesoG);
+    }
+    aoMudar("multiFilamento", false);
+  };
+
+  const mudarUso = (id, campo, valor) =>
+    aoMudar("filamentosUsados", usos.map((u) => (u.id === id ? { ...u, [campo]: valor } : u)));
+
+  const pesoTotal = usos.reduce((s, u) => s + num(u.pesoG), 0);
+
+  if (!produto.multiFilamento) {
+    return (
+      <button className="alternar-modo" onClick={ligarMulti} style={{ marginBottom: 13 }}>
+        <Icone nome="mais" tamanho={14} />
+        A peça usa mais de uma cor? Lançar peso por filamento
+      </button>
+    );
+  }
+
+  return (
+    <div className="multifilamento">
+      <div className="multifilamento-topo">
+        <span className="rotulo">
+          <Icone nome="filamento" tamanho={14} /> Filamentos da peça
+        </span>
+        <button className="botao botao-claro botao-pequeno" onClick={desligarMulti}>
+          Usar um filamento só
+        </button>
+      </div>
+
+      {usos.map((uso, i) => (
+        <div className="multifilamento-linha" key={uso.id}>
+          <span className="ordem">{i + 1}</span>
+          <select
+            className="entrada"
+            value={uso.filamentoId}
+            onChange={(e) => mudarUso(uso.id, "filamentoId", e.target.value)}
+            aria-label={`Filamento ${i + 1}`}
+          >
+            <option value="">— escolha a cor —</option>
+            {base.filamentos.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.nome || "Sem nome"}
+                {f.cor ? ` · ${f.cor}` : ""}
+                {f.precoKg ? ` · ${brl(f.precoKg)}/kg` : ""}
+              </option>
+            ))}
+          </select>
+          <div className="entrada-sufixo" style={{ width: 116 }}>
+            <span>g</span>
+            <input
+              className="entrada"
+              type="number"
+              step="1"
+              min="0"
+              placeholder="0"
+              value={uso.pesoG}
+              onChange={(e) => mudarUso(uso.id, "pesoG", e.target.value)}
+              aria-label={`Peso do filamento ${i + 1}`}
+            />
+          </div>
+          <button
+            className="botao-icone"
+            aria-label="Remover cor"
+            onClick={() =>
+              aoMudar("filamentosUsados", usos.filter((u) => u.id !== uso.id))
+            }
+          >
+            <Icone nome="lixeira" tamanho={14} />
+          </button>
+        </div>
+      ))}
+
+      <div className="multifilamento-rodape">
+        <button
+          className="botao botao-claro botao-pequeno"
+          onClick={() => aoMudar("filamentosUsados", [...usos, novoUsoFilamento()])}
+        >
+          <Icone nome="mais" tamanho={14} /> Adicionar cor
+        </button>
+        <span>
+          peso total da impressão <b>{gramas(pesoTotal)}</b>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Canais de venda: escolhe vários, o primeiro manda no destaque ────────────
+function CanaisDoProduto({ produto, base, analise, aoMudar }) {
+  const selecionados = analise.canais.map((c) => c.id);
+
+  const alternar = (id) => {
+    if (selecionados.includes(id)) {
+      if (selecionados.length === 1) return; // sempre resta um
+      aoMudar("canaisIds", selecionados.filter((c) => c !== id));
+    } else {
+      aoMudar("canaisIds", [...selecionados, id]);
+    }
+  };
+
+  const tornarPrincipal = (id) =>
+    aoMudar("canaisIds", [id, ...selecionados.filter((c) => c !== id)]);
+
+  return (
+    <div className="campo" style={{ marginBottom: 13 }}>
+      <label>Canais de venda</label>
+      <div className="canais-chips">
+        {base.canais.map((canal) => {
+          const ativo = selecionados.includes(canal.id);
+          const principal = selecionados[0] === canal.id;
+          return (
+            <button
+              key={canal.id}
+              className={`canal-chip${ativo ? " ativo" : ""}${principal ? " principal" : ""}`}
+              onClick={() => alternar(canal.id)}
+              aria-pressed={ativo}
+            >
+              <Icone nome={ativo ? "check" : "mais"} tamanho={13} />
+              {canal.nome}
+              {principal && <em>principal</em>}
+            </button>
+          );
+        })}
+      </div>
+      <span className="campo-dica">
+        {selecionados.length > 1
+          ? "O resultado em destaque é do canal principal. Clique numa linha do comparativo pra trocar."
+          : "Selecione mais de um pra comparar quanto sobra em cada marketplace."}
+      </span>
+      {selecionados.length > 1 && (
+        <ComparativoCanais analise={analise} aoEscolher={tornarPrincipal} />
+      )}
+    </div>
+  );
+}
+
+function ComparativoCanais({ analise, aoEscolher }) {
+  const temPreco = analise.preco > 0 && analise.custo.total > 0;
+
+  return (
+    <div className="comparativo">
+      <div className="comparativo-cabecalho">
+        <span>Canal</span>
+        <span>Sugerido</span>
+        <span>{temPreco ? "Taxa" : "Mínimo"}</span>
+        <span>{temPreco ? "Lucro" : "—"}</span>
+        <span>Margem</span>
+      </div>
+      {analise.porCanal.map((linha, i) => (
+        <button
+          key={linha.canal.id}
+          className={`comparativo-linha${i === 0 ? " principal" : ""}`}
+          onClick={() => aoEscolher(linha.canal.id)}
+          title="Usar como canal principal"
+        >
+          <span className="nome">{linha.canal.nome}</span>
+          <span className="mono">{linha.sugerido > 0 ? brl(linha.sugerido) : "—"}</span>
+          <span className="mono apagado">
+            {temPreco ? brl(linha.venda.taxa.valor) : brl(linha.minimo)}
+          </span>
+          <span className="mono" style={{ color: linha.leitura?.cor }}>
+            {temPreco ? brl(linha.venda.lucro) : "—"}
+          </span>
+          <span className="mono" style={{ color: linha.leitura?.cor, fontWeight: 700 }}>
+            {temPreco ? pct(linha.venda.margem) : "—"}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function textoResumo(produto, analise) {
@@ -35,8 +226,7 @@ function textoResumo(produto, analise) {
   return linhas.join("\n");
 }
 
-export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDuplicar, abertoInicial }) {
-  const [aberto, setAberto] = useState(abertoInicial);
+export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDuplicar, aberto, aoAlternar }) {
   const [copiado, setCopiado] = useState(false);
 
   const analise = analisarProduto(produto, base);
@@ -59,9 +249,9 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
   };
 
   return (
-    <div className="cartao">
+    <div className="cartao" id={`produto-${produto.id}`}>
       {/* ── Cabeçalho ─────────────────────────────────────────────── */}
-      <div className="produto-topo" onClick={() => setAberto((a) => !a)}>
+      <div className="produto-topo" onClick={aoAlternar}>
         <button
           className="produto-emoji"
           title="Trocar ícone"
@@ -233,27 +423,33 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                 vazio="— escolha uma impressora —"
                 dica={semImpressora ? "Sem impressora, energia e depreciação ficam de fora." : undefined}
               />
-              <CampoSelecao
-                label="Filamento"
-                valor={produto.filamentoId}
-                aoMudar={(v) => aoMudar("filamentoId", v)}
-                opcoes={base.filamentos.map((f) => ({
-                  id: f.id,
-                  label: `${f.nome || "Sem nome"}${f.precoKg ? ` · ${brl(f.precoKg)}/kg` : ""}`,
-                }))}
-                vazio="— escolha um filamento —"
-                dica={semFilamento ? "Sem filamento, o material não entra na conta." : undefined}
-              />
+              {!produto.multiFilamento && (
+                <CampoSelecao
+                  label="Filamento"
+                  valor={produto.filamentoId}
+                  aoMudar={(v) => aoMudar("filamentoId", v)}
+                  opcoes={base.filamentos.map((f) => ({
+                    id: f.id,
+                    label: `${f.nome || "Sem nome"}${f.precoKg ? ` · ${brl(f.precoKg)}/kg` : ""}`,
+                  }))}
+                  vazio="— escolha um filamento —"
+                  dica={semFilamento ? "Sem filamento, o material não entra na conta." : undefined}
+                />
+              )}
             </div>
 
+            <FilamentosDoProduto produto={produto} base={base} aoMudar={aoMudar} />
+
             <div className="grade grade-4" style={{ marginBottom: 13 }}>
-              <CampoNumero
-                label="Peso da impressão"
-                sufixo="g"
-                valor={produto.pesoG}
-                aoMudar={(v) => aoMudar("pesoG", v)}
-                dica="O número que o fatiador mostra."
-              />
+              {!produto.multiFilamento && (
+                <CampoNumero
+                  label="Peso da impressão"
+                  sufixo="g"
+                  valor={produto.pesoG}
+                  aoMudar={(v) => aoMudar("pesoG", v)}
+                  dica="O número que o fatiador mostra."
+                />
+              )}
               <CampoNumero
                 label="Tempo — horas"
                 sufixo="h"
@@ -328,13 +524,9 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
 
           {/* ── Venda ───────────────────────────────────────────── */}
           <Bloco titulo="Venda" icone="moeda">
-            <div className="grade grade-3" style={{ marginBottom: 13 }}>
-              <CampoSelecao
-                label="Canal de venda"
-                valor={produto.canalId}
-                aoMudar={(v) => aoMudar("canalId", v)}
-                opcoes={base.canais.map((c) => ({ id: c.id, label: c.nome }))}
-              />
+            <CanaisDoProduto produto={produto} base={base} analise={analise} aoMudar={aoMudar} />
+
+            <div className="grade grade-2" style={{ marginBottom: 13 }}>
               <CampoDinheiro
                 label="Frete por sua conta"
                 valor={produto.freteProprio}
@@ -356,7 +548,10 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                 onClick={() => aoMudar("preco", sugerido.toFixed(2))}
               >
                 <div>
-                  <div className="rotulo">PREÇO SUGERIDO · MARGEM DE {pct(base.settings.margemAlvo, 0)}</div>
+                  <div className="rotulo">
+                    PREÇO SUGERIDO · MARGEM DE {pct(base.settings.margemAlvo, 0)}
+                    {analise.canais.length > 1 && ` · ${canal.nome}`}
+                  </div>
                   <div className="dica">Clique pra aplicar · mínimo sem prejuízo {brl(minimo)}</div>
                 </div>
                 <span className="valor">{brl(sugerido)}</span>
@@ -420,6 +615,7 @@ export default function CartaoProduto({ produto, base, aoMudar, aoRemover, aoDup
                   <div>
                     <div className="rotulo" style={{ color: leitura.cor }}>
                       Lucro por peça · margem {leitura.label}
+                      {analise.canais.length > 1 && ` · ${canal.nome}`}
                     </div>
                     <div style={{ fontSize: 11.5, color: "var(--apagado)", marginTop: 3 }}>
                       Markup {venda.markup.toFixed(2).replace(".", ",")}× sobre o custo

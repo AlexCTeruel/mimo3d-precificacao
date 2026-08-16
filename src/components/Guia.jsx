@@ -20,6 +20,14 @@ const PERGUNTAS = [
     r: "É a permissão que o autor deu. Muito modelo gratuito é só pra uso pessoal — vender uma cópia dele pode dar problema. Marque a licença de cada produto e o painel avisa se algo publicado ainda está pendente de conferência.",
   },
   {
+    p: "A peça usa duas cores. Como lanço?",
+    r: "Dentro de Produção, clique em “A peça usa mais de uma cor?”. Aí você escolhe cada filamento e o peso dele em gramas — o custo de material vira a soma das cores, cada uma pelo seu preço por quilo, e o detalhamento mostra uma linha por cor.",
+  },
+  {
+    p: "Posso comparar o mesmo produto em vários marketplaces?",
+    r: "Pode. Em Venda, marque quantos canais quiser: o comparativo mostra o preço sugerido, a taxa, o lucro e a margem em cada um, lado a lado. O canal marcado como principal é o que aparece no resultado grande — clique numa linha do comparativo pra trocar.",
+  },
+  {
     p: "Imprimi 6 peças na mesma placa. Como lanço?",
     r: "Coloque o peso e o tempo da placa inteira e escreva 6 em “peças nessa impressão”. A calculadora divide tudo e mostra o custo de uma unidade.",
   },

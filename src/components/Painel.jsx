@@ -44,7 +44,7 @@ export default function Painel({ base, irPara }) {
         p.modeloUrl,
         p.anuncioUrl,
         p.anuncioSku,
-        a.canal?.nome || "",
+        a.canais.map((c) => c.nome).join(" · "),
         a.custo.total.toFixed(2).replace(".", ","),
         a.preco.toFixed(2).replace(".", ","),
         a.sugerido.toFixed(2).replace(".", ","),
